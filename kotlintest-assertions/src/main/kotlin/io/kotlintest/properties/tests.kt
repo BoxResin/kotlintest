@@ -1,12 +1,12 @@
 @file:Suppress("RemoveExplicitTypeArguments")
 
 import io.kotlintest.properties.Gen
-import io.kotlintest.properties.propertyAssertionError
 import io.kotlintest.properties.PropertyContext
 import io.kotlintest.properties.PropertyFailureInput
+import io.kotlintest.properties.propertyAssertionError
 import io.kotlintest.properties.shrinking.Shrinker
 
-fun <A> testAndShrink(a: A, shrinkera: Shrinker<A>?, context: PropertyContext, fn: PropertyContext.(a: A) -> Unit) {
+inline fun <A> testAndShrink(a: A, shrinkera: Shrinker<A>?, context: PropertyContext, fn: PropertyContext.(a: A) -> Unit) {
   context.inc()
   try {
     context.fn(a)
@@ -17,7 +17,7 @@ fun <A> testAndShrink(a: A, shrinkera: Shrinker<A>?, context: PropertyContext, f
   }
 }
 
-fun <A, B> testAndShrink(a: A, b: B, shrinkera: Shrinker<A>?, shrinkerb: Shrinker<B>?, context: PropertyContext, fn: PropertyContext.(a: A, b: B) -> Unit) {
+inline fun <A, B> testAndShrink(a: A, b: B, shrinkera: Shrinker<A>?, shrinkerb: Shrinker<B>?, context: PropertyContext, fn: PropertyContext.(a: A, b: B) -> Unit) {
   context.inc()
   try {
     context.fn(a, b)
@@ -32,7 +32,7 @@ fun <A, B> testAndShrink(a: A, b: B, shrinkera: Shrinker<A>?, shrinkerb: Shrinke
   }
 }
 
-fun <A, B, C> testAndShrink(a: A, b: B, c: C, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, context: PropertyContext, fn: PropertyContext.(a: A, b: B, c: C) -> Unit) {
+inline fun <A, B, C> testAndShrink(a: A, b: B, c: C, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, context: PropertyContext, fn: PropertyContext.(a: A, b: B, c: C) -> Unit) {
   context.inc()
   try {
     context.fn(a, b, c)
@@ -49,7 +49,7 @@ fun <A, B, C> testAndShrink(a: A, b: B, c: C, gena: Gen<A>, genb: Gen<B>, genc: 
   }
 }
 
-fun <A, B, C, D> testAndShrink(a: A, b: B, c: C, d: D, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, context: PropertyContext, fn: PropertyContext.(a: A, b: B, c: C, D) -> Unit) {
+inline fun <A, B, C, D> testAndShrink(a: A, b: B, c: C, d: D, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, context: PropertyContext, fn: PropertyContext.(a: A, b: B, c: C, D) -> Unit) {
   context.inc()
   try {
     context.fn(a, b, c, d)
@@ -58,7 +58,7 @@ fun <A, B, C, D> testAndShrink(a: A, b: B, c: C, d: D, gena: Gen<A>, genb: Gen<B
   }
 }
 
-fun <A, B, C, D, E> testAndShrink(a: A, b: B, c: C, d: D, e: E, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, gene: Gen<E>, context: PropertyContext, fn: PropertyContext.(a: A, b: B, c: C, D, E) -> Unit) {
+inline fun <A, B, C, D, E> testAndShrink(a: A, b: B, c: C, d: D, e: E, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, gene: Gen<E>, context: PropertyContext, fn: PropertyContext.(a: A, b: B, c: C, D, E) -> Unit) {
   context.inc()
   try {
     context.fn(a, b, c, d, e)

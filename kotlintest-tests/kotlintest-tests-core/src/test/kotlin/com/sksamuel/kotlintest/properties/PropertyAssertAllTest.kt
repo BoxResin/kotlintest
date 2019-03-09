@@ -7,9 +7,9 @@ import io.kotlintest.properties.forAll
 import io.kotlintest.should
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
-import io.kotlintest.specs.StringSpec
+import io.kotlintest.specs.FreeSpec
 
-class PropertyAssertAllTest : StringSpec({
+class PropertyAssertAllTest : FreeSpec({
 
   "startsWith" {
     var actualAttempts = 0
@@ -463,6 +463,32 @@ class PropertyAssertAllTest : StringSpec({
     assertAll { a: Map<Int, String>, b: Map<out Double, Boolean> ->
       a.keys.plus(a.values.toSet()).plus(b.keys).plus(b.values.toSet()).size shouldBe
           a.keys.size + a.values.toSet().size + b.keys.size + b.values.toSet().size
+    }
+  }
+  
+  "accept suspend" {
+    suspend fun foo() {}
+    
+    assertAll { _: Int ->
+      foo()
+    }
+    
+    assertAll { _: Int, _: Int ->
+      foo()
+    }
+    
+    assertAll { _: Int, _: Int, _: Int ->
+      foo()
+    }
+  }
+  
+  "Accepts nested scope" - {
+    suspend fun foo() { }
+    
+    assertAll { a: Int ->
+      "Foo $a" {
+        foo()
+      }
     }
   }
 

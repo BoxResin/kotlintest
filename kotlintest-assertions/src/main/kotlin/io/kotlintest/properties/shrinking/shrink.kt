@@ -1,20 +1,16 @@
-import io.kotlintest.properties.Gen
-import io.kotlintest.properties.propertyAssertionError
-import io.kotlintest.properties.PropertyContext
-import io.kotlintest.properties.PropertyFailureInput
-import io.kotlintest.properties.PropertyTesting
+import io.kotlintest.properties.*
 import io.kotlintest.properties.shrinking.Shrinker
 
-fun <T> shrink(t: T, gen: Gen<T>, test: (T) -> Unit): T = shrink2(t, gen.shrinker(), test)
+inline fun <T> shrink(t: T, gen: Gen<T>, test: (T) -> Unit): T = shrink2(t, gen.shrinker(), test)
 
-fun <T> shrink2(t: T, shrinker: Shrinker<T>?, test: (T) -> Unit): T {
+inline fun <T> shrink2(t: T, shrinker: Shrinker<T>?, test: (T) -> Unit): T {
   return when (shrinker) {
     null -> t
     else -> shrink(t, shrinker, test)
   }
 }
 
-fun <T> shrink(t: T, shrinker: Shrinker<T>, test: (T) -> Unit): T {
+inline fun <T> shrink(t: T, shrinker: Shrinker<T>, test: (T) -> Unit): T {
   val sb = StringBuilder()
   sb.append("Attempting to shrink failed arg ${convertValueToString(t)}\n")
   var candidate = t
@@ -55,7 +51,7 @@ fun <T> shrink(t: T, shrinker: Shrinker<T>, test: (T) -> Unit): T {
 
 }
 
-fun <A, B, C, D> shrinkInputs(a: A,
+inline fun <A, B, C, D> shrinkInputs(a: A,
                               b: B,
                               c: C,
                               d: D,

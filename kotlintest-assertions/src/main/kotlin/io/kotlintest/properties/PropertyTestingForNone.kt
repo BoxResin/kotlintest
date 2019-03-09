@@ -3,61 +3,59 @@ package io.kotlintest.properties
 import io.kotlintest.Failures
 import outputClassifications
 
-inline fun <reified A> forNone(noinline fn: PropertyContext.(a: A) -> Boolean) = forNone(1000, fn)
-inline fun <reified A> forNone(iterations: Int, noinline fn: PropertyContext.(a: A) -> Boolean) {
+inline fun <reified A> forNone(fn: PropertyContext.(a: A) -> Boolean) = forNone(1000, fn)
+inline fun <reified A> forNone(iterations: Int, fn: PropertyContext.(a: A) -> Boolean) {
   forNone(iterations, Gen.default(), fn)
 }
 
-fun <A> forNone(gena: Gen<A>, fn: PropertyContext.(a: A) -> Boolean) = forNone(1000, gena, fn)
-fun <A> Gen<A>.forNone(iterations: Int = 1000, fn: PropertyContext.(a0: A) -> Boolean) = forNone(iterations, this, fn)
-fun <A> Gen<A>.forNone(iterations: Int = 1000, fn: PropertyContext.(a0: A, a1: A) -> Boolean) = forNone(iterations, this, this, fn)
-fun <A> Gen<A>.forNone(iterations: Int = 1000, fn: PropertyContext.(a0: A, a1: A, a2: A) -> Boolean) = forNone(iterations, this, this, this, fn)
-fun <A> Gen<A>.forNone(iterations: Int = 1000, fn: PropertyContext.(a0: A, a1: A, a2: A, a3: A) -> Boolean) = forNone(iterations, this, this, this, this, fn)
-fun <A> Gen<A>.forNone(iterations: Int = 1000, fn: PropertyContext.(a0: A, a1: A, a2: A, a3: A, a4: A) -> Boolean) = forNone(iterations, this, this, this, this, this, fn)
-fun <A> Gen<A>.forNone(iterations: Int = 1000, fn: PropertyContext.(a0: A, a1: A, a2: A, a3: A, a4: A, a5: A) -> Boolean) = forNone(iterations, this, this, this, this, this, this, fn)
-fun <A> forNone(iterations: Int, gena: Gen<A>, fn: PropertyContext.(a: A) -> Boolean) {
+inline fun <A> forNone(gena: Gen<A>, fn: PropertyContext.(a: A) -> Boolean) = forNone(1000, gena, fn)
+inline fun <A> Gen<A>.forNone(iterations: Int = 1000, fn: PropertyContext.(a0: A) -> Boolean) = forNone(iterations, this, fn)
+inline fun <A> Gen<A>.forNone(iterations: Int = 1000, fn: PropertyContext.(a0: A, a1: A) -> Boolean) = forNone(iterations, this, this, fn)
+inline fun <A> Gen<A>.forNone(iterations: Int = 1000, fn: PropertyContext.(a0: A, a1: A, a2: A) -> Boolean) = forNone(iterations, this, this, this, fn)
+inline fun <A> Gen<A>.forNone(iterations: Int = 1000, fn: PropertyContext.(a0: A, a1: A, a2: A, a3: A) -> Boolean) = forNone(iterations, this, this, this, this, fn)
+inline fun <A> Gen<A>.forNone(iterations: Int = 1000, fn: PropertyContext.(a0: A, a1: A, a2: A, a3: A, a4: A) -> Boolean) = forNone(iterations, this, this, this, this, this, fn)
+inline fun <A> Gen<A>.forNone(iterations: Int = 1000, fn: PropertyContext.(a0: A, a1: A, a2: A, a3: A, a4: A, a5: A) -> Boolean) = forNone(iterations, this, this, this, this, this, this, fn)
+inline fun <A> forNone(iterations: Int, gena: Gen<A>, fn: PropertyContext.(a: A) -> Boolean) {
   if (iterations <= 0) throw IllegalArgumentException("Iterations should be a positive number")
   val context = PropertyContext()
-  fun test(a: A) {
+  for (a in gena.constants()) {
     context.inc()
     val passed = context.fn(a)
     if (passed) {
       throw Failures.failure("Property passed for\n$a\nafter ${context.attempts()} attempts")
     }
   }
-  for (a in gena.constants()) {
-    test(a)
-  }
   val avalues = gena.random().iterator()
   while (context.attempts() < iterations) {
     val a = avalues.next()
-    test(a)
+    context.inc()
+    val passed = context.fn(a)
+    if (passed) {
+      throw Failures.failure("Property passed for\n$a\nafter ${context.attempts()} attempts")
+    }
   }
   outputClassifications(context)
 }
 
-inline fun <reified A, reified B> forNone(noinline fn: PropertyContext.(a: A, b: B) -> Boolean) {
+inline fun <reified A, reified B> forNone(fn: PropertyContext.(a: A, b: B) -> Boolean) {
   forNone(Gen.default(), Gen.default(), fn)
 }
 
-inline fun <reified A, reified B> forNone(iterations: Int, noinline fn: PropertyContext.(a: A, b: B) -> Boolean) {
+inline fun <reified A, reified B> forNone(iterations: Int, fn: PropertyContext.(a: A, b: B) -> Boolean) {
   forNone(iterations, Gen.default(), Gen.default(), fn)
 }
 
-fun <A, B> forNone(gena: Gen<A>, genb: Gen<B>, fn: PropertyContext.(a: A, b: B) -> Boolean) = forNone(1000, gena, genb, fn)
+inline fun <A, B> forNone(gena: Gen<A>, genb: Gen<B>, fn: PropertyContext.(a: A, b: B) -> Boolean) = forNone(1000, gena, genb, fn)
 
-fun <A, B> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, fn: PropertyContext.(a: A, b: B) -> Boolean) {
+inline fun <A, B> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, fn: PropertyContext.(a: A, b: B) -> Boolean) {
   val context = PropertyContext()
-  fun test(a: A, b: B) {
-    context.inc()
-    val passed = context.fn(a, b)
-    if (passed) {
-      throw Failures.failure("Property passed for\n$a\n$b\nafter ${context.attempts()} attempts")
-    }
-  }
   for (a in gena.constants()) {
     for (b in genb.constants()) {
-      test(a, b)
+      context.inc()
+      val passed = context.fn(a, b)
+      if (passed) {
+        throw Failures.failure("Property passed for\n$a\n$b\nafter ${context.attempts()} attempts")
+      }
     }
   }
   val avalues = gena.random().iterator()
@@ -65,23 +63,27 @@ fun <A, B> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, fn: PropertyCont
   while (context.attempts() < iterations) {
     val a = avalues.next()
     val b = bvalues.next()
-    test(a, b)
+    context.inc()
+    val passed = context.fn(a, b)
+    if (passed) {
+      throw Failures.failure("Property passed for\n$a\n$b\nafter ${context.attempts()} attempts")
+    }
   }
   outputClassifications(context)
 }
 
-inline fun <reified A, reified B, reified C> forNone(noinline fn: PropertyContext.(a: A, b: B, c: C) -> Boolean) {
+inline fun <reified A, reified B, reified C> forNone(fn: PropertyContext.(a: A, b: B, c: C) -> Boolean) {
   forNone(1000, fn)
 }
 
-inline fun <reified A, reified B, reified C> forNone(iterations: Int, noinline fn: PropertyContext.(a: A, b: B, c: C) -> Boolean) {
+inline fun <reified A, reified B, reified C> forNone(iterations: Int, fn: PropertyContext.(a: A, b: B, c: C) -> Boolean) {
   forNone(iterations, Gen.default(), Gen.default(), Gen.default(), fn)
 }
 
-fun <A, B, C> forNone(gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, fn: PropertyContext.(a: A, b: B, c: C) -> Boolean) =
+inline fun <A, B, C> forNone(gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, fn: PropertyContext.(a: A, b: B, c: C) -> Boolean) =
   forNone(1000, gena, genb, genc, fn)
 
-fun <A, B, C> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, fn: PropertyContext.(a: A, b: B, c: C) -> Boolean) {
+inline fun <A, B, C> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, fn: PropertyContext.(a: A, b: B, c: C) -> Boolean) {
   if (iterations <= 0) throw IllegalArgumentException("Iterations should be a positive number")
   val context = PropertyContext()
   for (a in gena.constants()) {
@@ -111,31 +113,28 @@ fun <A, B, C> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>,
   outputClassifications(context)
 }
 
-inline fun <reified A, reified B, reified C, reified D> forNone(noinline fn: PropertyContext.(a: A, b: B, c: C, D) -> Boolean) {
+inline fun <reified A, reified B, reified C, reified D> forNone(fn: PropertyContext.(a: A, b: B, c: C, D) -> Boolean) {
   forNone(1000, fn)
 }
 
-inline fun <reified A, reified B, reified C, reified D> forNone(iterations: Int, noinline fn: PropertyContext.(a: A, b: B, c: C, D) -> Boolean) {
+inline fun <reified A, reified B, reified C, reified D> forNone(iterations: Int, fn: PropertyContext.(a: A, b: B, c: C, D) -> Boolean) {
   forNone(iterations, Gen.default(), Gen.default(), Gen.default(), Gen.default(), fn)
 }
 
-fun <A, B, C, D> forNone(gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, fn: PropertyContext.(a: A, b: B, c: C, d: D) -> Boolean) =
+inline fun <A, B, C, D> forNone(gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, fn: PropertyContext.(a: A, b: B, c: C, d: D) -> Boolean) =
   forNone(1000, gena, genb, genc, gend, fn)
 
-fun <A, B, C, D> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, fn: PropertyContext.(a: A, b: B, c: C, d: D) -> Boolean) {
+inline fun <A, B, C, D> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, fn: PropertyContext.(a: A, b: B, c: C, d: D) -> Boolean) {
   val context = PropertyContext()
-  fun test(a: A, b: B, c: C, d: D) {
-    context.inc()
-    val passed = context.fn(a, b, c, d)
-    if (passed) {
-      throw Failures.failure("Property passed for\n$a\n$b\n$c\n$d\nafter ${context.attempts()} attempts")
-    }
-  }
   for (a in gena.constants()) {
     for (b in genb.constants()) {
       for (c in genc.constants()) {
         for (d in gend.constants()) {
-          test(a, b, c, d)
+          context.inc()
+          val passed = context.fn(a, b, c, d)
+          if (passed) {
+            throw Failures.failure("Property passed for\n$a\n$b\n$c\n$d\nafter ${context.attempts()} attempts")
+          }
         }
       }
     }
@@ -145,37 +144,43 @@ fun <A, B, C, D> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, genc: Gen<
   val cvalues = genc.random().iterator()
   val dvalues = gend.random().iterator()
   while (context.attempts() < iterations) {
-    test(avalues.next(), bvalues.next(), cvalues.next(), dvalues.next())
+    val a = avalues.next()
+    val b = bvalues.next()
+    val c = cvalues.next()
+    val d = dvalues.next()
+    context.inc()
+    val passed = context.fn(a, b, c, d)
+    if (passed) {
+      throw Failures.failure("Property passed for\n$a\n$b\n$c\n$d\nafter ${context.attempts()} attempts")
+    }
   }
   outputClassifications(context)
 }
 
-inline fun <reified A, reified B, reified C, reified D, reified E> forNone(noinline fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E) -> Boolean) =
+inline fun <reified A, reified B, reified C, reified D, reified E> forNone(fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E) -> Boolean) =
   forNone(1000, fn)
 
-inline fun <reified A, reified B, reified C, reified D, reified E> forNone(iterations: Int, noinline fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E) -> Boolean) {
+inline fun <reified A, reified B, reified C, reified D, reified E> forNone(iterations: Int, fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E) -> Boolean) {
   forNone(iterations, Gen.default(), Gen.default(), Gen.default(), Gen.default(), Gen.default(), fn)
 }
 
-fun <A, B, C, D, E> forNone(gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, gene: Gen<E>, fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E) -> Boolean) =
+inline fun <A, B, C, D, E> forNone(gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, gene: Gen<E>, fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E) -> Boolean) =
   forNone(1000, gena, genb, genc, gend, gene, fn)
 
-fun <A, B, C, D, E> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, gene: Gen<E>, fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E) -> Boolean) {
+inline fun <A, B, C, D, E> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, gene: Gen<E>, fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E) -> Boolean) {
   if (iterations <= 0) throw IllegalArgumentException("Iterations should be a positive number")
   val context = PropertyContext()
-  fun test(a: A, b: B, c: C, d: D, e: E) {
-    context.inc()
-    val passed = context.fn(a, b, c, d, e)
-    if (passed) {
-      throw Failures.failure("Property passed for\n$a\n$b\n$c\n$d\n$e\nafter ${context.attempts()} attempts")
-    }
-  }
+  
   for (a in gena.constants()) {
     for (b in genb.constants()) {
       for (c in genc.constants()) {
         for (d in gend.constants()) {
           for (e in gene.constants()) {
-            test(a, b, c, d, e)
+            context.inc()
+            val passed = context.fn(a, b, c, d, e)
+            if (passed) {
+              throw Failures.failure("Property passed for\n$a\n$b\n$c\n$d\n$e\nafter ${context.attempts()} attempts")
+            }
           }
         }
       }
@@ -192,42 +197,42 @@ fun <A, B, C, D, E> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, genc: G
     val c = cvalues.next()
     val d = dvalues.next()
     val e = evalues.next()
-    test(a, b, c, d, e)
+    context.inc()
+    val passed = context.fn(a, b, c, d, e)
+    if (passed) {
+      throw Failures.failure("Property passed for\n$a\n$b\n$c\n$d\n$e\nafter ${context.attempts()} attempts")
+    }
   }
   outputClassifications(context)
 }
 
-inline fun <reified A, reified B, reified C, reified D, reified E, reified F> forNone(noinline fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E, f: F) -> Boolean) {
+inline fun <reified A, reified B, reified C, reified D, reified E, reified F> forNone(fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E, f: F) -> Boolean) {
   forNone(1000, fn)
 }
 
-inline fun <reified A, reified B, reified C, reified D, reified E, reified F> forNone(iterations: Int, noinline fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E, f: F) -> Boolean) {
+inline fun <reified A, reified B, reified C, reified D, reified E, reified F> forNone(iterations: Int, fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E, f: F) -> Boolean) {
   forNone(iterations, Gen.default(), Gen.default(), Gen.default(), Gen.default(), Gen.default(), Gen.default(), fn)
 }
 
-fun <A, B, C, D, E, F> forNone(gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, gene: Gen<E>, genf: Gen<F>, fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E, f: F) -> Boolean) =
+inline fun <A, B, C, D, E, F> forNone(gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, gene: Gen<E>, genf: Gen<F>, fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E, f: F) -> Boolean) =
   forNone(1000, gena, genb, genc, gend, gene, genf, fn)
 
-fun <A, B, C, D, E, F> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, gene: Gen<E>, genf: Gen<F>, fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E, f: F) -> Boolean) {
+inline fun <A, B, C, D, E, F> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, genc: Gen<C>, gend: Gen<D>, gene: Gen<E>, genf: Gen<F>, fn: PropertyContext.(a: A, b: B, c: C, d: D, e: E, f: F) -> Boolean) {
   if (iterations <= 0) throw IllegalArgumentException("Iterations should be a positive number")
 
   val context = PropertyContext()
-
-  fun test(a: A, b: B, c: C, d: D, e: E, f: F) {
-    context.inc()
-    val passed = context.fn(a, b, c, d, e, f)
-    if (passed) {
-      throw Failures.failure("Property passed for\n$a\n$b\n$c\n$d\n$e\n$f\nafter ${context.attempts()} attempts")
-    }
-  }
-
+  
   for (a in gena.constants()) {
     for (b in genb.constants()) {
       for (c in genc.constants()) {
         for (d in gend.constants()) {
           for (e in gene.constants()) {
             for (f in genf.constants()) {
-              test(a, b, c, d, e, f)
+              context.inc()
+              val passed = context.fn(a, b, c, d, e, f)
+              if (passed) {
+                throw Failures.failure("Property passed for\n$a\n$b\n$c\n$d\n$e\n$f\nafter ${context.attempts()} attempts")
+              }
             }
           }
         }
@@ -247,7 +252,11 @@ fun <A, B, C, D, E, F> forNone(iterations: Int, gena: Gen<A>, genb: Gen<B>, genc
     val d = dvalues.next()
     val e = evalues.next()
     val f = fvalues.next()
-    test(a, b, c, d, e, f)
+    context.inc()
+    val passed = context.fn(a, b, c, d, e, f)
+    if (passed) {
+      throw Failures.failure("Property passed for\n$a\n$b\n$c\n$d\n$e\n$f\nafter ${context.attempts()} attempts")
+    }
   }
   outputClassifications(context)
 }
